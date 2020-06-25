@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.cy.pj.sys.dao.SysLogDao">
+
+	<insert id="insertObject">
+		insert into sys_logs
+		(username,operation,method,params,time,ip,createdTime)
+		values
+		(#{username},#{operation},#{method},#{params},#{time},#{ip},#{createdTime})
+	</insert>
+       <!-- 定义日志删除的sql映射 -->
+       <delete id="deleteObjects">
+           delete from sys_logs
+           <where>
+               <if test="ids!=null and ids.length>0">
+                 id in 
+                 <foreach collection="ids" open="(" close=")" separator="," item="id">
+                     #{id}
+                 </foreach>
+               </if>
+               or 1=2
+           </where>
+       </delete>
+       
+       <!-- 在mybatis中可以通过sql元素定义SQL共性内容 ,
+                        假如其它元素中用到此部分内容可以基于include元素进行包含-->
+       <sql id="queryWhereId">
+              from sys_logs
+              <where>
+               <if test="username!=null and username!=''">
+                 username like concat("%",#{username},"%")
+               </if>
+              </where>
+       </sql>
+       <select id="findPageObjects" 
+               resultType="com.cy.pj.sys.entity.SysLog">
+              select *
+              <include refid="queryWhereId"/>
+              order by createdTime desc
+              limit #{startIndex},#{pageSize}
+       </select>
+       <select id="getRowCount" resultType="int">
+            select count(*)
+            <include refid="queryWhereId"/>
+       </select>
+  
+  </mapper>

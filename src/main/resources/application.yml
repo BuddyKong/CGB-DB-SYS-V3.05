@@ -1,0 +1,43 @@
+#server
+server:
+  port: 80
+  servlet:
+    context-path: /
+  tomcat:    threads:      max: 500
+      min-spare: 5
+#HikariCp
+spring:
+  datasource:
+    url: jdbc:mysql:///jtsys?serverTimezone=GMT%2B8&characterEncoding=utf8
+    username: root
+    password: root
+  thymeleaf: #thymeleaf
+    prefix: classpath:/templates/pages/
+  aop:    proxy-target-class: false  #jdk Proxy (优先使用jdk，但目标类没有实现接口会考虑实用cglib)
+  task:    execution:      pool:        core-size: 5 
+        max-size: 128
+        queue-capacity: 128
+        keep-alive: 60000
+      thread-name-prefix: DB-SERVICE-THREAD-
+
+shiro:
+  loginUrl: /doLoginUI
+  web:
+    enabled: true
+  sessionManager:
+    sessionIdCookieEnabled: true
+    sessionIdUrlRewritingEnabled: false
+  rememberMeManager: 
+    cookie: 
+      name: rememberMe 
+      maxAge: 3600
+
+#mybatis
+mybatis:
+  mapper-locations:
+  - classpath:/mapper/*/*.xml
+#log
+logging:
+  level:
+    com.cy: debug
+

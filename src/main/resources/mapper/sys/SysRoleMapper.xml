@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.cy.pj.sys.dao.SysRoleDao"> 
+      <!-- 更新角色自身信息 -->
+      <update id="updateObject">
+         update sys_roles
+         set name=#{name},
+             note=#{note},
+             modifiedUser=#{modifiedUser},
+             modifiedTime=now()
+         where id=#{id}
+      </update>
+  
+      <resultMap type="com.cy.pj.sys.entity.SysRoleMenu" 
+                 id="sysRoleMenu">
+              <!-- id元素用于做唯一主键映射，假如又将这个值
+                               作为一个查询条件又去执行了新的查询，这条语句建议不要省略 -->
+              <id property="id" column="id"/>
+              <!-- collection应用于one2many映射
+                   1)property为resultMap中type类型中的一个属性值
+                   2)ofType为property对应的属性集合中的一个对象类型
+                   3)id为上次查询结果中某一列的值
+                   4)select的值为一个命名空间下的查询语句 -->
+              <collection property="menuIds"
+                          ofType="integer"
+                          column="id"
+                          select="com.cy.pj.sys.dao.SysRoleMenuDao.findMenuIdsByRoleId">
+              </collection>
+      </resultMap>
+      <!-- resultMap一般应用于mybatis查询中高级映射(自定义映射) -->
+      <select id="findObjectById" resultMap="sysRoleMenu">
+            select id,name,note
+            from sys_roles
+            where id=#{id}
+      </select>
+       <insert id="insertObject"
+               parameterType="com.cy.pj.sys.entity.SysRole"
+               useGeneratedKeys="true"
+               keyProperty="id">
+            insert into sys_roles
+            (name,note,createdTime,modifiedTime,createdUser,modifiedUser)
+            values
+            (#{name},#{note},now(),now(),#{createdUser},#{modifiedUser})
+       </insert>
+       
+       <!-- 在mybatis中可以通过sql元素定义SQL共性内容 ,
+                        假如其它元素中用到此部分内容可以基于include元素进行包含-->
+       <sql id="queryWhereId">
+              from sys_roles
+              <where>
+               <if test="name!=null and name!=''">
+                 name like concat("%",#{name},"%")
+               </if>
+              </where>
+       </sql>
+       <select id="findPageObjects" 
+               resultType="com.cy.pj.sys.entity.SysRole">
+              select *
+              <include refid="queryWhereId"/>
+              order by createdTime desc
+       </select>
+       <!-- 
+       <select id="findPageObjects" 
+               resultType="com.cy.pj.sys.entity.SysRole">
+              select *
+              <include refid="queryWhereId"/>
+              order by createdTime desc
+              limit #{startIndex},#{pageSize}
+       </select>
+        -->
+       <!--
+       <select id="getRowCount" resultType="int">
+            select count(*)
+            <include refid="queryWhereId"/>
+       </select>
+       -->
+  
+  </mapper>
